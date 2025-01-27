@@ -8,7 +8,7 @@ from flask_swagger import swagger
 from flask_cors import CORS
 from utils import APIException, generate_sitemap
 from admin import setup_admin
-from models import db, User
+from models import db, User, Planets, People, Favoritos
 #from models import Person
 
 app = Flask(__name__)
@@ -39,11 +39,62 @@ def sitemap():
 @app.route('/user', methods=['GET'])
 def handle_hello():
 
+    #consulta de todos los valores de una tabla
+    data = db.session.scalars(select(User)).all()
+    results = list(map(lambda item: item.serialize(),data))
+
     response_body = {
-        "msg": "Hello, this is your GET /user response "
+        "msg": "Hello, this is your GET /user response ",
+        "results":results
     }
 
     return jsonify(response_body), 200
+
+
+#consulta de un solo registro
+# @app.route('/user/<int:id>', methods=['GET'])
+# def get_user(id):
+#     try:
+#         user = db.session.execute(select(User).filter_by(id=id)).scalar_one()
+
+#         response_body = {
+#             "msg": "Hello, this is your GET /user response ",
+#             "result":user.serialize()
+#         }
+
+#         return jsonify(response_body), 200
+#     except:
+#         return jsonify({"msg":"user not exist"}), 404
+
+
+# ##### POST ENDPOINT
+# @app.route('/user', methods=['POST'])
+# def create_user():
+#     request_data = request.json
+#     print(request_data)
+#     user = User(email=request_data["email"], password=request_data["password"])
+#     db.session.add(user)
+#     db.session.commit()
+
+#     response_body = {
+#         "msg":"user created"
+#     }
+
+#     return jsonify(response_body), 200
+
+# ##### DELETE ENDPOINT
+# @app.route('/user/<int:id>', methods=['DELETE'])
+# def delete_user(id):
+
+#     user = db.session.execute(db.select(User).filter_by(id=id)).scalar_one()
+#     db.session.delete(user)
+#     db.session.commit()
+
+#     response_body = {
+#         "msg":"user deleted"
+#     }
+
+#     return jsonify(response_body), 200
 
 # this only runs if `$ python src/app.py` is executed
 if __name__ == '__main__':
