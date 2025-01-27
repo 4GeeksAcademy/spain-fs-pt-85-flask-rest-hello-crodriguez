@@ -18,7 +18,7 @@ class User(db.Model):
     email = db.Column(db.String(120), unique=True, nullable=False)
     contrasena = db.Column(db.String(20), unique=True, nullable=False)
     fecha_suscripcion = db.Column(db.String(20), unique=True, nullable=False)
-    favoritos = db.relationship("Favoritos")
+    favoritos = db.Column(db.Integer, db.ForeignKey('favoritos.id'))
 
     def __repr__(self):
         return '<User %r>' % self.username
