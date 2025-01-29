@@ -16,19 +16,19 @@ class User(db.Model):
     __tablename__ = "user"
 
     id = db.Column(db.Integer, primary_key=True)
-    nombre = db.Column(db.String(120), unique=True)
+    name = db.Column(db.String(120), unique=True)
     email = db.Column(db.String(120), unique=True, nullable=False)
-    contrasena = db.Column(db.String(20), unique=True, nullable=False)
+    password = db.Column(db.String(20), unique=True, nullable=False)
     is_active = db.Column(db.Boolean(), unique=False)
     favoritos = db.Column(db.Integer, db.ForeignKey('favoritos.id'))
 
     def __repr__(self):
-        return '<User %r>' % self.nombre
+        return '<User %r>' % self.name
 
     def serialize(self):
         return {
             "id": self.id,
-            "nombre": self.nombre,
+            "name": self.name,
             "email": self.email,
             # do not serialize the password, its a security breach
         }

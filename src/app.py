@@ -8,6 +8,7 @@ from flask_swagger import swagger
 from flask_cors import CORS
 from utils import APIException, generate_sitemap
 from admin import setup_admin
+from sqlalchemy import select
 from models import db, User, Planets, People, Favoritos
 #from models import Person
 
@@ -39,33 +40,36 @@ def sitemap():
 
 @app.route('/user', methods=['GET'])
 def handle_hello():
+    try:
+        data = db.session.scalars(select(User)).all()
+        results = list(map(lambda item: item.serialize(), data))
 
-    #consulta de todos los valores de una tabla
-    data = db.session.scalars(select(User)).all()
-    results = list(map(lambda item: item.serialize(),data))
+        response_body = {
+            "msg": "Hello, this is your GET /user response ",
+            "results": results
+        }
 
-    response_body = {
-        "msg": "Hello, this is your GET /user response ",
-        "results":results
-    }
+        return jsonify(response_body), 200
 
-    return jsonify(response_body), 200
+    except Exception as e:
+        print(f"Error en /user: {e}")
+        return jsonify({"error": "An error occurred"}), 500
 
 
 #consulta de un solo registro
-# @app.route('/user/<int:id>', methods=['GET'])
-# def get_user(id):
-#     try:
-#         user = db.session.execute(select(User).filter_by(id=id)).scalar_one()
+@app.route('/user/<int:id>', methods=['GET'])
+def get_user(id):
+    try:
+        user = db.session.execute(select(User).filter_by(id=id)).scalar_one()
 
-#         response_body = {
-#             "msg": "Hello, this is your GET /user response ",
-#             "result":user.serialize()
-#         }
+        response_body = {
+            "msg": "Hello, this is your GET /user response ",
+            "result":user.serialize()
+        }
 
-#         return jsonify(response_body), 200
-#     except:
-#         return jsonify({"msg":"user not exist"}), 404
+        return jsonify(response_body), 200
+    except:
+        return jsonify({"msg":"user not exist"}), 404
 
 
 # ##### POST ENDPOINT
