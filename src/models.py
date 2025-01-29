@@ -1,35 +1,35 @@
 from flask_sqlalchemy import SQLAlchemy
-# from sqlalchemy.orm import mapped_column
-# from sqlalchemy import Integer, String, Boolean
-# from sqlalchemy.orm import declarative_base
-# from sqlalchemy import create_engine
-# # # from eralchemy2 import render_er
-# from sqlalchemy import ForeignKey
-# from sqlalchemy.orm import relationship
+from sqlalchemy.orm import mapped_column
+from sqlalchemy import Integer, String, Boolean
+from sqlalchemy.orm import declarative_base
+from sqlalchemy import create_engine
+# from eralchemy2 import render_er
+from sqlalchemy import ForeignKey
+from sqlalchemy.orm import relationship
+
+
+
 
 db = SQLAlchemy()
-
 
 class User(db.Model):
     __tablename__ = "user"
 
     id = db.Column(db.Integer, primary_key=True)
-    nombre = db.Column(db.String(120), unique=True, nullable=False)
+    nombre = db.Column(db.String(120), unique=True)
     email = db.Column(db.String(120), unique=True, nullable=False)
     contrasena = db.Column(db.String(20), unique=True, nullable=False)
-    fecha_suscripcion = db.Column(db.String(20), unique=True, nullable=False)
+    is_active = db.Column(db.Boolean(), unique=False)
     favoritos = db.Column(db.Integer, db.ForeignKey('favoritos.id'))
 
     def __repr__(self):
-        return '<User %r>' % self.username
+        return '<User %r>' % self.nombre
 
     def serialize(self):
         return {
             "id": self.id,
             "nombre": self.nombre,
             "email": self.email,
-            "fecha_suscripcion": self.fecha_suscripcion,
-            "favoritos": self.favoritos
             # do not serialize the password, its a security breach
         }
 
@@ -42,7 +42,7 @@ class Planets(db.Model):
     favoritos = db.relationship("Favoritos")
 
     def __repr__(self):
-        return '<Planets %r>' % self.id
+        return f'<Planets {self.id}>'
 
     def serialize(self):
         return {
@@ -61,7 +61,7 @@ class People(db.Model):
     favoritos = db.relationship("Favoritos")
 
     def __repr__(self):
-        return '<People %r>' % self.id
+        return f'<People {self.id}>'
 
     def serialize(self):
         return{
