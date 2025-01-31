@@ -1,6 +1,6 @@
 from flask_sqlalchemy import SQLAlchemy
 from sqlalchemy.orm import mapped_column
-from sqlalchemy import Integer, String, Boolean
+from sqlalchemy import Integer, String, Boolean, Column
 from sqlalchemy.orm import declarative_base
 from sqlalchemy import create_engine
 # from eralchemy2 import render_er
@@ -15,12 +15,11 @@ db = SQLAlchemy()
 class User(db.Model):
     __tablename__ = "user"
 
-    id = db.Column(db.Integer, primary_key=True)
-    name = db.Column(db.String(120), unique=True)
-    email = db.Column(db.String(120), unique=True, nullable=False)
-    password = db.Column(db.String(20), unique=True, nullable=False)
-    is_active = db.Column(db.Boolean(), unique=False)
-    favoritos = db.Column(db.Integer, db.ForeignKey('favoritos.id'))
+    id = Column(Integer, primary_key=True)
+    name = Column(String(250), nullable=False)
+    email = Column(String(50), nullable=False)
+    password = Column(String(50), nullable=False)
+    favoritos = relationship("Favoritos", back_populates="user")
 
     def __repr__(self):
         return '<User %r>' % self.name
@@ -29,17 +28,17 @@ class User(db.Model):
         return {
             "id": self.id,
             "name": self.name,
-            "email": self.email,
+            "email": self.email, 
             # do not serialize the password, its a security breach
         }
 
 class Planets(db.Model):
     __tablename__ = "planets"
 
-    id = db.Column(db.Integer, primary_key=True)
-    nombre = db.Column(db.String(50), unique=True, nullable=False)
-    sistema = db.Column(db.String(50), unique=True, nullable=False)
-    favoritos = db.relationship("Favoritos")
+    id = Column(Integer, primary_key=True)
+    nombre = Column(String(50),  nullable=False)
+    sistema = Column(String(50), nullable=False)
+    favoritos = relationship("Favoritos", back_populates="planets")
 
     def __repr__(self):
         return f'<Planets {self.id}>'
@@ -48,20 +47,17 @@ class Planets(db.Model):
         return {
             "id": self.id,
             "nombre": self.nombre,
-            "sistema": self.sistema,
-            "favoritos": self.favoritos
+            "sistema": self.sistema
         }
 
 class People(db.Model):
     __tablename__ = "people"
 
-    id = db.Column(db.Integer, primary_key=True)
-    nombre = db.Column(db.String(50), unique=True, nullable=False)
-    especie = db.Column(db.String(50), unique=True, nullable=False)
-    # favoritos = db.relationship("Favoritos")
+    id = Column(Integer, primary_key=True)
+    nombre = Column(String(50), nullable=False)
+    especie = Column(String(50), nullable=False)
+    favoritos = relationship("Favoritos", back_populates="people")
 
-    # def __repr__(self):
-    #     return f'<People {self.id}>'
     def __repr__(self):
         return '<People %r>' % self.id
 
@@ -70,16 +66,18 @@ class People(db.Model):
             "id": self.id,
             "nombre": self.nombre,
             "especie": self.especie,
-            "favoritos": self.favoritos
         }
 
 class Favoritos(db.Model):
     __tablename__ = 'favoritos'
 
-    id = db.Column(db.Integer, primary_key=True)
-    usuario_id = db.Column(db.Integer, db.ForeignKey('user.id'))
-    planeta_id = db.Column(db.Integer, db.ForeignKey('planets.id'), nullable=True)
-    personaje_id = db.Column(db.Integer, db.ForeignKey('people.id'), nullable=True)
+    id = Column(Integer, primary_key=True)
+    usuario_id = Column(Integer, ForeignKey('user.id'))
+    planeta_id = Column(Integer, ForeignKey('planets.id'))
+    personaje_id = Column(Integer, ForeignKey('people.id'))
+    user = relationship("User", back_populates="favoritos")
+    planets = relationship("Planets", back_populates="favoritos")
+    people = relationship("People", back_populates="favoritos")
     
 
     def serialize(self):
