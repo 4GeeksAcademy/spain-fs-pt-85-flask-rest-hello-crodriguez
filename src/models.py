@@ -58,10 +58,12 @@ class People(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     nombre = db.Column(db.String(50), unique=True, nullable=False)
     especie = db.Column(db.String(50), unique=True, nullable=False)
-    favoritos = db.relationship("Favoritos")
+    # favoritos = db.relationship("Favoritos")
 
+    # def __repr__(self):
+    #     return f'<People {self.id}>'
     def __repr__(self):
-        return f'<People {self.id}>'
+        return '<People %r>' % self.id
 
     def serialize(self):
         return{
@@ -80,13 +82,13 @@ class Favoritos(db.Model):
     personaje_id = db.Column(db.Integer, db.ForeignKey('people.id'), nullable=True)
     
 
-    # def serialize(self):
-    #     return{
-    #         "id": self.id,
-    #         "usuario_id": self.usuario_id,
-    #         "planeta_id": self.planeta_id,
-    #         "personaje_id": self.personaje_id
-    #     }
+    def serialize(self):
+        return{
+            "id": self.id,
+            "usuario_id": self.usuario_id,
+            "planeta_id": self.planeta_id,
+            "personaje_id": self.personaje_id
+        }
 
 
 # db = SQLAlchemy()

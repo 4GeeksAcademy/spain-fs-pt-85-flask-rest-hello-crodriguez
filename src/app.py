@@ -38,6 +38,7 @@ def handle_invalid_usage(error):
 def sitemap():
     return generate_sitemap(app)
 
+#LISTAR USUARIOS
 @app.route('/user', methods=['GET'])
 def handle_hello():
     try:
@@ -71,6 +72,23 @@ def get_user(id):
     except:
         return jsonify({"msg":"user not exist"}), 404
 
+#listar todos los personajes (people)
+@app.route('/people', methods=['GET'])
+def handle_people():
+    try:
+        data = db.session.scalars(select(People)).all()
+        results = list(map(lambda item: item.serialize(), data))
+
+        response_body = {
+            "msg": "Hello, this is your GET /people response ",
+            "results": results
+        }
+
+        return jsonify(response_body), 200
+
+    except Exception as e:
+        print(f"Error en /people: {e}")
+        return jsonify({"error": "An error occurred"}), 500
 
 # ##### POST ENDPOINT
 # @app.route('/user', methods=['POST'])
