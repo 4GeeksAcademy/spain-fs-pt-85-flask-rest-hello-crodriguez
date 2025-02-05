@@ -56,7 +56,39 @@ def handle_hello():
         print(f"Error en /user: {e}")
         return jsonify({"error": "An error occurred"}), 500
 
+# crear usuarios
+@app.route('/user', methods=['POST'])
+def create_user():
+    try:
+        data = request.get_json()
+        if not data:
+            return jsonify({"msg": "Request body is empty"}), 400
 
+        required_fields = ['email', 'password']
+        if not all(field in data for field in required_fields):
+            return jsonify({"msg": "Missing required fields: email, password"}), 400
+
+        email = data.get('email')
+        password = data.get('password')
+
+        existing_user = db.session.scalars(select(User).filter_by(email=email)).first()
+        if existing_user:
+            return jsonify({"msg": "User exists"}), 400
+
+        # # Hashea la contraseña antes de guardarla
+        # hashed_password = generate_password_hash(password, method='sha256')
+
+        new_user = User(email=email, password=password)
+        db.session.add(new_user)
+        db.session.commit()
+
+        return jsonify(new_user.serialize()), 201  
+
+    except Exception as e:
+        db.session.rollback()
+        print(f"Error creating user: {e}")
+        return jsonify({"msg": "Error creating user"}), 500
+    
 #consulta de un solo registro
 @app.route('/user/<int:id>', methods=['GET'])
 def get_user(id):
@@ -150,53 +182,99 @@ def handle_favoritos():
     }
     return jsonify(response_body), 200
 
+
 ##### POST ENDPOINT
 @app.route('/favorite/planet/<int:planet_id>', methods=['POST'])
 def add_favorite_planet(planet_id):
-    user_id = 2  
-    planet = db.session.get(Planets, planet_id)
-    if not planet:
-        return jsonify({"msg": "Planet not found"}), 404
-    
-    favorito = Favoritos(usuario_id=user_id, planeta_id=planet_id)
-    db.session.add(favorito)
-    db.session.commit()
-    return jsonify(favorito.serialize()), 201
+    try:
+        user_id = request.json.get('user_id')
+        if user_id is None:
+            return jsonify({"msg": "user_id is required in the request body"}), 400
+
+        user = db.session.get(User, user_id)
+        if not user:
+            return jsonify({"msg": "User not found"}), 404
+
+        planet = db.session.get(Planets, planet_id)
+        if not planet:
+            return jsonify({"msg": "Planet not found"}), 404
+
+        favorito = Favoritos(usuario_id=user_id, planeta_id=planet_id)
+        db.session.add(favorito)
+        db.session.commit()
+        return jsonify(favorito.serialize()), 201
+
+    except Exception as e:
+        db.session.rollback() 
+        print(f"Error adding favorite planet: {e}")
+        return jsonify({"msg": "Error adding favorite"}), 500
 
 @app.route('/favorite/people/<int:people_id>', methods=['POST'])
 def add_favorite_people(people_id):
-    user_id = 2
-    people = db.session.get(People, people_id)
-    if not people:
-        return jsonify({"msg": "Character not found"}), 404
-    
-    favorito = Favoritos(usuario_id=user_id, personaje_id=people_id)
-    db.session.add(favorito)
-    db.session.commit()
-    return jsonify(favorito.serialize()), 201
+    try:
+        user_id = request.json.get('user_id')
+        if user_id is None:
+            return jsonify({"msg": "user_id is required in the request body"}), 400
+
+        user = db.session.get(User, user_id)
+        if not user:
+            return jsonify({"msg": "User not found"}), 404
+
+        people = db.session.get(People, people_id)
+        if not people:
+            return jsonify({"msg": "Character not found"}), 404
+
+        favorito = Favoritos(usuario_id=user_id, personaje_id=people_id)
+        db.session.add(favorito)
+        db.session.commit()
+        return jsonify(favorito.serialize()), 201
+
+    except Exception as e:
+        db.session.rollback() 
+        print(f"Error adding favorite people: {e}")
+        return jsonify({"msg": "Error adding favorite"}), 500
 
 # ##### DELETE ENDPOINT
 @app.route('/favorite/planet/<int:planet_id>', methods=['DELETE'])
 def delete_favorite_planet(planet_id):
-    user_id = 2
-    favorito = db.session.scalars(select(Favoritos).where(Favoritos.usuario_id == user_id, Favoritos.planeta_id == planet_id)).first()
-    if not favorito:
-        return jsonify({"msg": "Favorite planet not found"}), 404
-    
-    db.session.delete(favorito)
-    db.session.commit()
-    return jsonify({"msg": "Favorite planet deleted"}), 200
+    try:
+        user_id = request.json.get('user_id')
+        if user_id is None:
+            return jsonify({"msg": "user_id is required in the request body"}), 400
+
+        favorito = db.session.scalars(select(Favoritos).where(Favoritos.usuario_id == user_id, Favoritos.planeta_id == planet_id)).first()
+        if not favorito:
+            return jsonify({"msg": "Favorite planet not found"}), 404
+        
+        db.session.delete(favorito)
+        db.session.commit()
+        return jsonify({"msg": "Favorite planet deleted"}), 200
+
+    except Exception as e:
+        db.session.rollback()
+        print(f"Error deleting favorite planet: {e}")
+        return jsonify({"msg": "Error deleting favorite"}), 500
+
 
 @app.route('/favorite/people/<int:people_id>', methods=['DELETE'])
 def delete_favorite_people(people_id):
-    user_id = 2
-    favorito = db.session.scalars(select(Favoritos).where(Favoritos.usuario_id == user_id, Favoritos.personaje_id == people_id)).first()
-    if not favorito:
-        return jsonify({"msg": "Favorite people not found"}), 404
-    
-    db.session.delete(favorito)
-    db.session.commit()
-    return jsonify({"msg": "Favorite people deleted"}), 200
+    try:
+        user_id = request.json.get('user_id')
+        if user_id is None:
+            return jsonify({"msg": "user_id is required in the request body"}), 400
+
+        favorito = db.session.scalars(select(Favoritos).where(Favoritos.usuario_id == user_id, Favoritos.personaje_id == people_id)).first()
+        if not favorito:
+            return jsonify({"msg": "Favorite people not found"}), 404
+
+        db.session.delete(favorito)
+        db.session.commit()
+        return jsonify({"msg": "Favorite people deleted"}), 200
+
+    except Exception as e:
+        db.session.rollback()
+        print(f"Error deleting favorite people: {e}")
+        return jsonify({"msg": "Error deleting favorite"}), 500
 
 # this only runs if `$ python src/app.py` is executed
 if __name__ == '__main__':

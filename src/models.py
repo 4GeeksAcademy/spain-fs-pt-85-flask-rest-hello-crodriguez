@@ -16,7 +16,7 @@ class User(db.Model):
     __tablename__ = "user"
 
     id = Column(Integer, primary_key=True)
-    name = Column(String(250), nullable=False)
+    name = Column(String(250), nullable=False, default="")
     email = Column(String(50), nullable=False)
     password = Column(String(50), nullable=False)
     favoritos = relationship("Favoritos", back_populates="user")
@@ -81,11 +81,29 @@ class Favoritos(db.Model):
     
 
     def serialize(self):
-        return{
+        planet_name = None
+        planet_system = None
+        people_name = None
+        people_species = None
+
+        if self.planets:
+            planet_name = self.planets.nombre
+            planet_system = self.planets.sistema
+
+        if self.people: 
+            people_name = self.people.nombre
+            people_species = self.people.especie
+
+
+        return {
             "id": self.id,
             "usuario_id": self.usuario_id,
             "planeta_id": self.planeta_id,
-            "personaje_id": self.personaje_id
+            "personaje_id": self.personaje_id,
+            "planet_name": planet_name,
+            "planet_system": planet_system,
+            "people_name": people_name,
+            "people_species": people_species
         }
 
 
